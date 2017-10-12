@@ -64,7 +64,7 @@ class VideoScarer:
         self.isInitialized = True
         self.videoID = 0
         self.omxProcess = None
-        if len(normVideos) != len(scareVideos):
+        if (normVideos is not None) and (len(normVideos) != len(scareVideos)):
             raise ValueError("normVideos and scareVideos must be same length")
         else:
             self.normVideos = normVideos
@@ -101,8 +101,9 @@ class VideoScarer:
         return False
 
     def play_normal(self):
-        self.kill_all()
-        self.omxProcess = subprocess.Popen(self.playerCommand + [self.normVideos[self.videoID]], stdout=open(os.devnull, 'wb'), close_fds=True)
+        if self.normVideos is not None:
+             self.kill_all()
+             self.omxProcess = subprocess.Popen(self.playerCommand + [self.normVideos[self.videoID]], stdout=open(os.devnull, 'wb'), close_fds=True)
         return    
         
     def play_scare(self):
@@ -113,16 +114,18 @@ class VideoScarer:
 
     def play_next(self):
         self.videoID += 1
-        if self.videoID > (len(self.normVideos) - 1):
+        if self.videoID > (len(self.scareVideos) - 1):
             self.videoID = 0
-        self.play_normal()
+        if self.normVideos is not None:
+            self.play_normal()
         return
 
     def play_prev(self):
         self.videoID -= 1
         if self.videoID < 0:
-            self.videoID = len(self.normVideos) - 1
-        self.play_normal()
+            self.videoID = len(self.scareVideos) - 1
+        if self.normVideos is not None:
+            self.play_normal()
         return
         
     def close(self,signal=None,frame=None):
@@ -139,7 +142,8 @@ class VideoScarer:
         # positive due to the power fluctuation, and the time reset just 
         # repurposes the triggerInterval to wait a few seconds. Alternatively,
         # don't source the power from the Pi. 
-        self.play_normal()
+        if self.normVideos is not None:
+            self.play_normal()
         self.pirSensor.reset_trigger_time()
         while self.isInitialized:
             # Quit on ctrl-c or esc using PyGame's event handler
@@ -166,6 +170,7 @@ class VideoScarer:
             # Check the PIR sensor and scare if appropriate
             if self.pirSensor.is_triggered():
                 self.play_scare()
+                self.play_next()
                 self.pirSensor.reset_trigger_time()
 
 class Button:
