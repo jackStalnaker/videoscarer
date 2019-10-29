@@ -5,6 +5,7 @@ import sys
 import signal
 import pygame
 import subprocess
+import paho.mqtt.client as mqtt
 
 # Setup video lists
 normVideos_girlls = ["/home/pi/Videos/ghosts/girl_ls/meander1.mp4", \
@@ -52,14 +53,19 @@ normVideos_allvert = normVideos_girlvert + normVideos_man1vert \
 scareVideos_allvert = scareVideos_girlvert + scareVideos_man1vert \
                    + scareVideos_womanvert + scareVideos_man2vert
 
-normVideos = normVideos_allls
-scareVideos = scareVideos_allls
+normVideos = normVideos_allvert
+scareVideos = scareVideos_allvert
 
 class VideoScarer:
     def __init__(self,normVideos,scareVideos,volumeLevel,scareInterval,pirPin,ffButtonPin):
         GPIO.setmode(GPIO.BCM)
         self.pirSensor = PIRSensor(pirPin, scareInterval)
         self.ffButton = Button(ffButtonPin)
+
+        # set up MQTT publishing
+        self.mqttClient = mqtt.Client('halloween')
+        client.username_pw_set(username='name', password='secret')
+        client.connect('host', port=80)
 
         self.isInitialized = True
         self.videoID = 0
@@ -107,6 +113,7 @@ class VideoScarer:
         
     def play_scare(self):
         self.kill_all()
+        self.mqttClient.publish('topic', 'message')
         self.omxProcess = subprocess.Popen(self.playerCommand + [self.scareVideos[self.videoID]], stdout=open(os.devnull, 'wb'), close_fds=True)
         self.omxProcess.wait()
         return
