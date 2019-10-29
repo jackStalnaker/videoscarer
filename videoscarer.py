@@ -64,8 +64,8 @@ class VideoScarer:
 
         # set up MQTT publishing
         self.mqttClient = mqtt.Client('halloween')
-        client.username_pw_set(username='name', password='secret')
-        client.connect('host', port=80)
+        self.mqttClient.username_pw_set(username='name', password='secret')
+        self.mqttClient.connect('host', port=80)
 
         self.isInitialized = True
         self.videoID = 0
